@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Facebook Page Search</title>
+	<link rel="stylesheet" type="text/css" href="styles/app.css">
+	<script type="text/javascript" src="scripts/app.js"></script>
+</head>
+<body>
+	<script>
+	  window.fbAsyncInit = function() {
+	    FB.init({
+	      appId      : '195241170812620',
+	      xfbml      : true,
+	      version    : 'v2.5'
+	    });
+
+	    // NOTE : Init App
+
+	  };
+
+	  (function(d, s, id){
+	     var js, fjs = d.getElementsByTagName(s)[0];
+	     if (d.getElementById(id)) {return;}
+	     js = d.createElement(s); js.id = id;
+	     js.src = "//connect.facebook.net/en_US/sdk.js";
+	     fjs.parentNode.insertBefore(js, fjs);
+	   }(document, 'script', 'facebook-jssdk'));
+	</script>
+
+	<div class="app">
+		<div class="header"> Discover Pages </div>
+
+		<div class="container">
+			<div class="action">
+				<input class="query" id="searchText" type="text" onkeypress="EventsUtil.onEnter(event)"/>
+				<input class="search" id="searchButton" type="button" value="Search" onclick="PagesApp.search()" />
+			</div>
+			<div class="resultList">
+				<ul id="resultList" onclick="EventsUtil.onClick(event)">
+					<li>No Results</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="footer"> </div>
+	</div>
+</body>
+</html>
