@@ -22,16 +22,22 @@
 	margin: 0 auto;
 }
 
-.query {
-
-}
-
 .search {
 	cursor: pointer;
 }
 
 .resultList {
 	padding-top: 10px;
+}
+
+.page {
+	padding-top: 10px;
+	font-weight: bold;
+}
+
+.detail {
+	padding-top: 10px;
+	font-style: italic;
 }
 
 .unstar {

@@ -38,9 +38,25 @@ var FB_API = (function () {
 		    }
 		);
 	}
+
+	function getDetails(id, callback) {
+		FB.api(
+			'/' + id,
+			'GET',
+			{ "fields": "about" },
+			function (response) {
+				if (response.error) {
+					console.error("ERROR : ", response.error.message);
+				} else {
+					callback(response);
+				}
+			}
+		);
+	}
 	
 	return {
-		search: search
+		search: search,
+		getDetails: getDetails
 	};
 })();
 
@@ -101,21 +117,24 @@ var PagesApp = (function (FB_API, DOMUtil) {
 		FB_API.search(getSearchText(), updateList);
 	};
 
-    var createOnClickHandler = function (i) {
-    	return function (e) {
-    		console.log("Clicked Element : ", e.target.id);
-    	};
-    };
-
     var updateList = function (data) {
 		var list = document.getElementById('resultList');	
 		list.innerHTML = '';
+
+		// NOTE : Sort in descending order
+		data.sort(function (a, b) {
+			return (b.name < a.name) ? -1 : (b.name > a.name) ? 1 : 0 ;
+		});
 
 		for (var i=0;i < data.length; i++) {
 	  		var item = DOMUtil.createElement('li', data[i].id);
 	  		var span_text = DOMUtil.createElement('span');
 	  		DOMUtil.setInnerHTML(span_text, data[i].name);
-	  		
+	  		DOMUtil.setAttributes(span_text, [{
+	  			name: "class",
+	  			value: "page"
+	  		}]);
+
 	  		var span_star = DOMUtil.createElement('span');
 	  		DOMUtil.setInnerHTML(span_star, "☆");
 	  		DOMUtil.setAttributes(span_star, [{
@@ -126,6 +145,18 @@ var PagesApp = (function (FB_API, DOMUtil) {
 	  		item.appendChild(span_star);
 	  		list.appendChild(item);
 	  	}
+	};
+
+	var showDetail = function (parent) {
+		FB_API.getDetails(parent.id, function (data) {
+			var detail = DOMUtil.createElement('div');
+			DOMUtil.setInnerHTML(detail, data.about || "About Not Mentioned");
+			DOMUtil.setAttributes(detail, [{
+	  			name: "class",
+	  			value: "detail"
+	  		}]);
+			parent.appendChild(detail);
+		});
 	};
 
 	var starItem = function (id) {
@@ -142,6 +173,7 @@ var PagesApp = (function (FB_API, DOMUtil) {
 
 	return {
 		search: search,
+		showDetail: showDetail,
 		starItem: starItem,
 		FAVOURITES: FAVOURITES
 	};
@@ -157,18 +189,38 @@ var EventsUtil = (function (PagesApp) {
 	};
 
 	var onClick = function (e) {
-		var id = e.target.parentElement.id;
+		var el, id;
+
+		if (e.target.className == "star" || e.target.className == "unstar") {
+			el = e.target;
+			id = e.target.parentElement.id;
+		} else {
+			el = e.target.parentElement.id == "resultList" ? e.target : e.target.parentElement;
+			id = el.id;
+		}
+				
 		console.log("Clicked Element : ", id);
-		if (e.target.className != "") {
+
+		if (el.className == "star" || el.className == "unstar") {
 			// NOTE : Clicked on Star
 			if (PagesApp.starItem(id)) {
-				e.target.className = "star";
+				el.className = "star";
 			} else {
-				e.target.className = "unstar";
+				el.className = "unstar";
 			}
 		} else {
 			// NOTE : Clicked on List Item
-
+			if (el.shown) {
+				el.shown = false;
+				el.children[2].style.display = "none";
+			} else {
+				el.shown = true;
+				if (el.children.length < 3) {
+					PagesApp.showDetail(el);
+				} else {
+					el.children[2].style.display = "block";
+				}
+			}
 		}
 	};
 
