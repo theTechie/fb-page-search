@@ -1,7 +1,7 @@
 var FB_API = (function () {
-	//var PageAccessToken = undefined;
+	var PageAccessToken = undefined;
 
-	/*function getLoginStatus(callback) {
+	function getLoginStatus(callback) {
 		FB.getLoginStatus.bind(this);
 
 		FB.getLoginStatus(function(response) {
@@ -13,11 +13,15 @@ var FB_API = (function () {
 		  	console.log("Not Connected; redirect to Login !");
 		  }
 		});
-	}*/
-/*
-	function login(callback) {
-		FB.login(getLoginStatus);
-	}*/
+	}
+
+	function login(searchText, callback) {
+		FB.login(function (response) {
+			if (response.status === 'connected') {
+				search(searchText, callback);
+			}
+		});
+	}
 
 	function search(searchText, callback) {
 		FB.api(
@@ -27,6 +31,7 @@ var FB_API = (function () {
 		    function(response) {
 		    	if (response.error) {
 		    		console.error("ERROR : ", response.error.message);
+		    		login(searchText, callback);
 		    	} else {
 		    		callback(response.data);
 		    	}
@@ -95,10 +100,6 @@ var PagesApp = (function (FB_API, DOMUtil) {
 	var search = function () {
 		FB_API.search(getSearchText(), updateList);
 	};
-
-	  /*<img src="http://lorempixum.com/100/100/nature/1">
-      <h3>Headline</h3>
-      <p>Lorem ipsum dolor sit amet...</p>*/
 
     var createOnClickHandler = function (i) {
     	return function (e) {
