@@ -115,6 +115,7 @@ var PagesApp = (function (FB_API, DOMUtil) {
 
 	var search = function () {
 		FB_API.search(getSearchText(), updateList);
+		return false;
 	};
 
     var updateList = function (data) {
