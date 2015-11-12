@@ -9,12 +9,15 @@
 	<script>
 	  window.fbAsyncInit = function() {
 	    FB.init({
-	      appId      : '195241170812620',
+	      appId      : '196251730711564',
+	      cookie	 : true,
+	      status	 : true,
 	      xfbml      : true,
 	      version    : 'v2.5'
 	    });
 
 	    // NOTE : Init App
+	    PagesApp.init();	    
 	  };
 
 	  (function(d, s, id){
@@ -30,13 +33,18 @@
 		<div class="header"> <h3> Discover Pages </h3> </div>
 
 		<div class="container">
+			<div class="message">
+				<span float="left"><input id="login" type="button" value="Login" onclick="PagesApp.login()" disabled /></span>
+				<span id="message" float="left"></span>
+			</div>
+
 			<div class="action">
 				<input class="query" id="searchText" type="text" onkeypress="EventsUtil.onEnter(event)"/>
-				<input class="search" id="searchButton" type="button" value="Search" onclick="PagesApp.search()" />
+				<input class="search" id="searchButton" type="button" value="Search" onclick="PagesApp.search()" disabled />
 			</div>
 			<div class="resultList">
 				<ul id="resultList" onclick="EventsUtil.onClick(event)">
-					<li>No Results</li>
+					<li><center>No Results</center></li>
 				</ul>
 			</div>
 		</div>

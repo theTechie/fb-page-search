@@ -1,24 +1,18 @@
 var FB_API = (function () {
-	var PageAccessToken = undefined;
-
 	function getLoginStatus(callback) {
-		FB.getLoginStatus.bind(this);
-
 		FB.getLoginStatus(function(response) {
 		  if (response.status === 'connected') {
-		    this.PageAccessToken = response.authResponse.accessToken;
-		    callback(this.PageAccessToken);
-		    console.log("Access Token: ", accessToken);
+		    callback({ status : true });
 		  } else {
-		  	console.log("Not Connected; redirect to Login !");
+		  	callback({ status : false });
 		  }
 		});
 	}
 
-	function login(searchText, callback) {
+	function login(callback) {
 		FB.login(function (response) {
 			if (response.status === 'connected') {
-				search(searchText, callback);
+				callback({ status: true });
 			}
 		});
 	}
@@ -31,7 +25,6 @@ var FB_API = (function () {
 		    function(response) {
 		    	if (response.error) {
 		    		console.error("ERROR : ", response.error.message);
-		    		login(searchText, callback);
 		    	} else {
 		    		callback(response.data);
 		    	}
@@ -55,6 +48,8 @@ var FB_API = (function () {
 	}
 	
 	return {
+		getLoginStatus: getLoginStatus,
+		login: login,
 		search: search,
 		getDetails: getDetails
 	};
@@ -97,12 +92,19 @@ var DOMUtil = (function () {
 		return el ? el.value : undefined;
 	};
 
+	var removeElementById = function(elementId) {
+		var el = document.getElementById(elementId);
+		if (el && el.parentElement)
+			el.parentElement.removeChild(el);
+	};
+
 	return {
 		createElement: createElement,
 		setInnerHTML: setInnerHTML,
 		attachEventHandlers: attachEventHandlers,
 		setAttributes: setAttributes,
-		getInputElementValue: getInputElementValue
+		getInputElementValue: getInputElementValue,
+		removeElementById: removeElementById
 	};
 })();
 
@@ -113,11 +115,50 @@ var PagesApp = (function (FB_API, DOMUtil) {
 		return DOMUtil.getInputElementValue('searchText');
 	};
 
+	var init = function () {
+		FB_API.getLoginStatus(loginCheck);
+	};
+
 	var search = function () {
-		FB_API.search(getSearchText(), updateList);
+		var searchText = getSearchText();
+		
+		if (searchText != '') {
+			showMessage('', true);
+			document.getElementById('searchButton').disabled = true;
+			FB_API.search(searchText, updateList);
+		} else {
+			showMessage("Please enter valid search text !");
+		}
+	};
+
+	var loginCheck = function (response) {
+		if (response.status) {
+			loginSuccess();
+		} else {
+			showMessage("Please login to Application !");
+			document.getElementById('login').removeAttribute('disabled');
+		}
+	};
+
+	var loginSuccess = function () {
+		DOMUtil.removeElementById('login');
+		document.getElementById('searchButton').removeAttribute('disabled');
+	};
+
+	var login = function (response) {
+		FB_API.login(function (response) {
+			if (response.status) {
+				showMessage("Successfully Logged In !");
+				loginSuccess();
+			} else {
+				showMessage("Unable to access Graph API !");
+			}
+		});
 	};
 
     var updateList = function (data) {
+    	document.getElementById('searchButton').disabled = false;
+    	
 		var list = document.getElementById('resultList');	
 		list.innerHTML = '';
 
@@ -171,7 +212,14 @@ var PagesApp = (function (FB_API, DOMUtil) {
 
 	starItem.bind(this);
 
+	var showMessage = function (message, hide) {
+		if (hide) message = '';
+		DOMUtil.setInnerHTML(document.getElementById('message'), message);
+	};
+
 	return {
+		init: init,
+		login: login,
 		search: search,
 		showDetail: showDetail,
 		starItem: starItem,
@@ -198,7 +246,7 @@ var EventsUtil = (function (PagesApp) {
 			el = e.target.parentElement.id == "resultList" ? e.target : e.target.parentElement;
 			id = el.id;
 		}
-				
+		
 		console.log("Clicked Element : ", id);
 
 		if (el.className == "star" || el.className == "unstar") {
@@ -210,16 +258,18 @@ var EventsUtil = (function (PagesApp) {
 			}
 		} else {
 			// NOTE : Clicked on List Item
-			if (el.shown) {
-				el.shown = false;
-				el.children[2].style.display = "none";
-			} else {
-				el.shown = true;
-				if (el.children.length < 3) {
-					PagesApp.showDetail(el);
+			if (el.id) {
+				if (el.shown) {
+					el.shown = false;
+					el.children[2].style.display = "none";
 				} else {
-					el.children[2].style.display = "block";
-				}
+					el.shown = true;
+					if (el.children.length < 3) {
+						PagesApp.showDetail(el);
+					} else {
+						el.children[2].style.display = "block";
+					}
+				}	
 			}
 		}
 	};

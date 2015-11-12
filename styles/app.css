@@ -20,6 +20,15 @@
 	padding-left: 180px;
     padding-top: 30px;
 	margin: 0 auto;
+	color: green;
+}
+
+.message {
+	width: 500px;
+	padding-left: 180px;
+    padding-top: 30px;
+	margin: 0 auto;
+	color: green;
 }
 
 .search {
